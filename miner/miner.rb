@@ -19,8 +19,7 @@ loop do
       sleep 2
     else
       puts "#{transactions.length} transactions found"
-      block = Block.new(blockchain.chain.last.index + 1, transactions, blockchain.chain.last.hash)
-      blockchain.add_block(block)
+      blockchain.add_block(transactions)
     end
   end
 end

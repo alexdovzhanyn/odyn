@@ -1,22 +1,23 @@
 require 'digest'
 
 class Block
-  attr_reader :index, :timestamp, :nonce, :hash, :data, :previous_hash
+  attr_reader :index, :timestamp, :nonce, :hash, :data, :previous_hash, :difficulty
 
-  def initialize(index,  data, previous_hash)
+  def initialize(index,  data, previous_hash, difficulty)
     @index = index
     @timestamp = Time.now
     @data = data
     @previous_hash = previous_hash
     @hash = calculate_hash
     @nonce = 0
+    @difficulty = difficulty
   end
 
   def calculate_hash
     @hash = Digest::SHA256.hexdigest(@index.to_s + @timestamp.to_s + @data.to_s + @previous_hash.to_s + @nonce.to_s)
   end
 
-  def mine(difficulty)
+  def mine
     puts "Mining Block: #{index}"
     time_started = Time.now
 

@@ -1,5 +1,6 @@
 require './block'
 require './ledger'
+require './transaction'
 
 class Blockchain
   attr_reader :chain, :difficulty, :ledger
@@ -14,11 +15,12 @@ class Blockchain
   end
 
   def generate_genesis_block
-    Block.new(0, 'Genesis Block', 0)
+    Block.new(0, 'Genesis Block', 0, 0)
   end
 
-  def add_block(block)
-    block.mine(difficulty)
+  def add_block(transactions)
+    block = Block.new(chain.last.index + 1, transactions, chain.last.hash, difficulty)
+    block.mine
 
     if valid_block? block
       @chain << block

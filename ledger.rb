@@ -5,13 +5,13 @@ class Ledger
     @filename = filename
 
     CSV.open(@filename, 'wb') do |ledger|
-      ledger << ['index', 'timestamp', 'data', 'previous_hash', 'hash', 'nonce']
+      ledger << ['index', 'timestamp', 'data', 'previous_hash', 'hash', 'nonce', 'difficulty']
     end
   end
 
   def write(block)
     CSV.open(@filename, 'a') do |ledger|
-      ledger << [block.index, block.timestamp, block.data, block.previous_hash, block.hash, block.nonce]
+      ledger << [block.index, block.timestamp, block.data, block.previous_hash, block.hash, block.nonce, block.difficulty]
     end
   end
 end
