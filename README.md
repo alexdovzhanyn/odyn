@@ -1,7 +1,7 @@
 [![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()
 
 # Odyn Blockchain
-> A ruby implementation of blockchain technology
+> A ruby implementation of proof-of-work blockchain technology
 
 This project aims to be a reference & full-fledged cryptocurrency/blockchain written in ruby. Eventually it would also serve as a building block for applications aiming to build their
 platform on a blockchain/distributed ledger technology.
