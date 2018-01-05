@@ -25,7 +25,9 @@ OS X & Linux:
 ## Meta
 
 Like the project? Buy us some coffee!
+
 Bitcoin: 1Lqw6hcM3qsEqMp3eQvLeohHxd796yfGj4
+
 Ethereum: 0x81bb057f535b4ba77c95cdbbbf715cfddd605269
 
 Distributed under the MIT license. See ``LICENSE`` for more information.
