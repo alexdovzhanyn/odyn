@@ -15,7 +15,9 @@ OS X & Linux:
 1. Download this repository
 2. Make sure you have ruby installed on your system
 3. Run `bundle install`
-4. The entry to the blockchain is odyn.rb, run `ruby odyn.rb` to start the node
+4. The entry to the blockchain is node/node.rb, run `ruby node/node.rb` to start the node
+5. Forward ports 9999 and 9998 on your router (this allows you to connect to other nodes)
+
 
 ## Release History
 

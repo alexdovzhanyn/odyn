@@ -37,7 +37,6 @@ class Odyn < Sinatra::Base
   end
 
   get '/register_node' do
-    binding.pry
     @peers << request.ip
     @peers = @peers.uniq
 
