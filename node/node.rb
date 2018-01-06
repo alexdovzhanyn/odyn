@@ -45,7 +45,10 @@ class Odyn < Sinatra::Base
 
   post '/transactions/new' do
     content_type :json
-    Thread.new { broadcast_transaction(params[:sender], params[:recipient], params[:amount]) }
+    Thread.new do
+      broadcast_transaction(params[:sender], params[:recipient], params[:amount])
+      Thread.current.kill
+    end
 
     return {status: 200}.to_json
   end
@@ -71,16 +74,18 @@ class Odyn < Sinatra::Base
     # We load the file and try to register our new node with the existing ones.
     # Once we succeed with registering with one node, we are done. This node will
     # provide us with the ipv4 addresses of other nodes that have connected to it
+    peers = []
     File.open('./node/nodes.txt', 'r') do |known_hosts|
       response = nil
       known_hosts.each do |host|
         response = message_peer(host, "/register_node", 'GET')
+        peers << host if response
         break if response
       end
 
       # If we were unable to connect to any of the nodes, start anyway
       # (this should almost never happen, except for the first node that is ever set up)
-      response ? response['nodes'] : []
+      peers.concat(response ? response['nodes'] : [])
     end
   end
 end
