@@ -22,22 +22,18 @@ class Odyn < Sinatra::Base
     super
   end
 
-  # post '/' do
-  #   @transactions << {
-  #     sender: params[:sender],
-  #     receiver: params[:receiver],
-  #     amount: params[:amount],
-  #     time_created: Time.now,
-  #     id: SecureRandom.hex
-  #   }
-  #
-  #   @transactions.to_json
-  # end
+  get '/transactions' do
+    content_type :json
+    @blockchain.unprocessed_transactions.to_json
+  end
 
   get '/chain' do
     content_type :json
     @blockchain.chain.to_json
+  end
 
+  post '/transactions/new' do
+    @blockchain.add_transaction( params[:sender], params[:recipient], params[:amount] ).to_json
   end
 end
 

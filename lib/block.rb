@@ -31,7 +31,7 @@ class Block
     puts "\nCalculated block hash: #{hash}, using nonce: #{nonce}"
   end
 
-  def to_json(*)
+  def to_json(options)
     return {
       index: index,
       timestamp: timestamp,

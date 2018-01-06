@@ -3,7 +3,7 @@ require_relative './ledger'
 require_relative './transaction'
 
 class Blockchain
-  attr_reader :chain, :difficulty, :ledger, :unprocessed_transactions
+  attr_reader :chain, :difficulty, :ledger
 
   def initialize
     genesis = generate_genesis_block
@@ -29,10 +29,6 @@ class Blockchain
     else
       puts "Invalid block: #{block}"
     end
-  end
-
-  def add_transaction(sender, recipient, amount)
-    unprocessed_transactions << Transaction.new(sender, recipient, amount)
   end
 
   def valid_block?(block)
