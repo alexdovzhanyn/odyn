@@ -1,2 +1,0 @@
-index,timestamp,transactions,previous_hash,hash,nonce,difficulty
-0,2018-01-05 23:32:11 -0500,Genesis Block,0,88651632971a2ffbe3ed766a56ad3957169d791bdecc9c927fb90f37e447ee5f,0,0
