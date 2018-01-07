@@ -1,7 +1,5 @@
 [![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()
 
-![Odyn Logo](https://ibin.co/3nLI0cTrzsSg.png)
-
 # Odyn Blockchain
 > A ruby implementation of proof-of-work blockchain technology
 
