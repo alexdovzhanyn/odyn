@@ -7,10 +7,10 @@ This project aims to be a reference & full-fledged cryptocurrency/blockchain wri
 platform on a blockchain/distributed ledger technology.
 
 ## Development setup
+For use-case-specific setup instructions, see <https://github.com/alexdovzhanyn/odyn/wiki/Development>. If you need further help or want to find out how to contribute,
+join the [Gitter Channel](https://gitter.im/odyn-crypto/Lobby) and ask!
 
-Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.
-
-OS X & Linux:
+### OS X & Linux:
 
 1. Download this repository
 2. Make sure you have ruby installed on your system
@@ -18,8 +18,6 @@ OS X & Linux:
 4. Update the nodes.txt file in the node/ folder to have the external ip of your router, along with the port that you plan on running the nodes on. It is a good idea to use one 2, with the same IP, but with 2 different ports (9999 and 9998)
 5. Forward ports 9999 and 9998 on your router (this allows you to connect to other nodes)
 6. The entry to the blockchain is node/node.rb, run `ruby node/node.rb` to start the node
-
-For use-case-specific setup instructions, see <https://github.com/alexdovzhanyn/odyn/wiki/Development>
 
 
 ## Release History
