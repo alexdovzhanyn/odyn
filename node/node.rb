@@ -10,17 +10,20 @@ require_relative '../lib/blockchain.rb'
 class Odyn < Sinatra::Base
   attr_accessor :transactions
 
+  PORT = 9999
+
   configure do
     set server: "thin"
-    set port: 9998
+    set port: PORT
     set traps: false
-    set logging: true
-    # set quiet: true
+    set logging: true # Should be set to nil for production
+    # set quiet: true # Should be set to true for production
     set bind: '0.0.0.0'
   end
 
   def initialize
     @blockchain = Blockchain.new
+    @ip = "#{get_current_ip}:#{PORT}"
     @peers = register_node
 
     super
@@ -37,35 +40,49 @@ class Odyn < Sinatra::Base
   end
 
   get '/register_node' do
-    @peers << request.ip
-    @peers = @peers.uniq
+    @peers << params[:ip_with_port]
+    @peers.uniq!
 
-    return { nodes: @peers }.to_json
+    return { nodes: @peers.reject{|node| node == @ip || node == params[:ip_with_port]} }.to_json
   end
 
   post '/transactions/new' do
     content_type :json
     Thread.new do
-      broadcast_transaction(params[:sender], params[:recipient], params[:amount])
+      broadcast_transaction(params[:sender], params[:recipient], params[:amount], params[:broadcasted_to] || [])
       Thread.current.kill
     end
 
     return {status: 200}.to_json
   end
 
-  def broadcast_transaction(sender, recipient, amount)
-    @peers.each do |peer|
+  def broadcast_transaction(sender, recipient, amount, broadcasted_to)
+    broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
+
+    broadcasting_to.each do |peer|
       puts "Broadcasting transaction to peer at #{peer}"
-      message_peer(peer, "/transactions/new", 'POST', { sender: sender, recipient: recipient, amount: amount})
+      message_peer(
+        peer,
+        "/transactions/new",
+        'POST',
+        {
+          sender: sender,
+          recipient: recipient,
+          amount: amount,
+          broadcasted_to: broadcasted_to.concat(broadcasting_to) << @ip
+        }
+      )
     end
   end
 
   # Net::HTTP will raise an error if the connection is refused. Let's assume a nil return value means the connection was unsuccessful
   def message_peer(peer, path, method, params = nil)
+    ip,port = peer.strip.split(':')
+
     if method == 'GET'
-      JSON.parse(Net::HTTP.get(peer.strip, path, 9999) ) rescue nil
+      JSON.parse(Net::HTTP.get(ip, path, port)) rescue nil
     elsif method == 'POST' && params
-      JSON.parse(Net::HTTP.new(peer.strip, 9999).post(path, params.to_json).body) rescue nil
+      JSON.parse(Net::HTTP.new(ip, port).post(path, parameterize(params)).body) rescue nil
     end
   end
 
@@ -78,8 +95,8 @@ class Odyn < Sinatra::Base
     File.open('./node/nodes.txt', 'r') do |known_hosts|
       response = nil
       known_hosts.each do |host|
-        response = message_peer(host, "/register_node", 'GET')
-        peers << host if response
+        response = message_peer(host.strip, "/register_node?ip_with_port=#{@ip}", 'GET')
+        peers << host.strip if response
         break if response
       end
 
@@ -87,6 +104,18 @@ class Odyn < Sinatra::Base
       # (this should almost never happen, except for the first node that is ever set up)
       peers.concat(response ? response['nodes'] : [])
     end
+  end
+
+  def get_current_ip
+    Net::HTTP.get(URI("http://api.ipify.org"))
+  end
+
+  private #================================================================
+
+  def parameterize(params)
+    # Transforms a hash to a parameter string
+    # E.x. {a: 'something', b: 'otherthing'} => 'a=something&b=otherthing'
+    URI.escape(params.collect{|k,v| "#{k}=#{v}"}.join('&'))
   end
 end
 
