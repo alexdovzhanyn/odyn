@@ -1,5 +1,7 @@
 [![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()
 
+![Odyn Logo](https://ibin.co/3nLI0cTrzsSg.png)
+
 # Odyn Blockchain
 > A ruby implementation of proof-of-work blockchain technology
 
@@ -18,6 +20,8 @@ OS X & Linux:
 4. Update the nodes.txt file in the node/ folder to have the external ip of your router, along with the port that you plan on running the nodes on. It is a good idea to use one 2, with the same IP, but with 2 different ports (9999 and 9998)
 5. Forward ports 9999 and 9998 on your router (this allows you to connect to other nodes)
 6. The entry to the blockchain is node/node.rb, run `ruby node/node.rb` to start the node
+
+For use-case-specific setup instructions, see <https://github.com/alexdovzhanyn/odyn/wiki/Development>
 
 
 ## Release History
@@ -42,5 +46,3 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 3. Commit your changes (`git commit -am 'Add some fooBar'`)
 4. Push to the branch (`git push origin feature/master`)
 5. Create a new Pull Request
-
-[wiki]: https://github.com/alexdovzhanyn/odyn/wiki
