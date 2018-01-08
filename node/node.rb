@@ -10,11 +10,12 @@ require_relative '../lib/blockchain.rb'
 class Odyn < Sinatra::Base
   attr_accessor :transactions
 
-  PORT = 9999
-
+  DEFAULT_PORT = 9999
+  @port = DEFAULT_PORT
+  
   configure do
     set server: "thin"
-    set port: PORT
+    set port: @port
     set traps: false
     set logging: true # Should be set to nil for production
     # set quiet: true # Should be set to true for production
@@ -23,9 +24,8 @@ class Odyn < Sinatra::Base
 
   def initialize
     @blockchain = Blockchain.new
-    @ip = "#{get_current_ip}:#{PORT}"
+    @ip = "#{get_current_ip}:#{@port}"
     @peers = register_node
-
     super
   end
 
@@ -118,5 +118,3 @@ class Odyn < Sinatra::Base
     URI.escape(params.collect{|k,v| "#{k}=#{v}"}.join('&'))
   end
 end
-
-Odyn.run!
