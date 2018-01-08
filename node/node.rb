@@ -22,7 +22,7 @@ class Odyn < Sinatra::Base
     set bind: '0.0.0.0'
   end
 
-  def initialize ()
+  def initialize
     @blockchain = Blockchain.new
     @ip = "#{get_current_ip}:#{@port}"
     @peers = register_node
