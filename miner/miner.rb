@@ -1,5 +1,5 @@
 require_relative './listener.rb'
-require_relative '../blockchain.rb'
+require_relative '../lib/blockchain.rb'
 
 
 
