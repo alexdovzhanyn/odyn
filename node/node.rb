@@ -6,16 +6,16 @@ require 'pry'
 require 'httparty'
 
 require_relative '../lib/blockchain.rb'
+require_relative '../wallet/wallet.rb'
 
 class Odyn < Sinatra::Base
   attr_accessor :transactions
 
   DEFAULT_PORT = 9999
-  @port = DEFAULT_PORT
-  
+
   configure do
     set server: "thin"
-    set port: @port
+    set port: settings.port || DEFAULT_PORT
     set traps: false
     set logging: true # Should be set to nil for production
     # set quiet: true # Should be set to true for production
@@ -24,8 +24,10 @@ class Odyn < Sinatra::Base
 
   def initialize
     @blockchain = Blockchain.new
-    @ip = "#{get_current_ip}:#{@port}"
+    @ip = "#{get_current_ip}:#{settings.port || DEFAULT_PORT}"
     @peers = register_node
+    @wallet = Wallet.new
+
     super
   end
 
@@ -49,29 +51,43 @@ class Odyn < Sinatra::Base
   post '/transactions/new' do
     content_type :json
     Thread.new do
-      broadcast_transaction(params[:sender], params[:recipient], params[:amount], params[:broadcasted_to] || [])
+      transaction = {
+        id: params[:id],
+        sender: params[:sender],
+        recipient: params[:recipient],
+        amount: params[:amount],
+        timestamp: params[:timestamp],
+        signature: params[:signature]
+      }
+      broadcast_transaction(transaction, params[:broadcasted_to] || [])
       Thread.current.kill
     end
 
     return {status: 200}.to_json
   end
 
-  def broadcast_transaction(sender, recipient, amount, broadcasted_to)
-    broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
+  def broadcast_transaction(transaction, broadcasted_to)
+    if @blockchain.valid_transaction? transaction
+      puts "Transaction Valid"
+      broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 
-    broadcasting_to.each do |peer|
-      puts "Broadcasting transaction to peer at #{peer}"
-      message_peer(
-        peer,
-        "/transactions/new",
-        'POST',
-        {
-          sender: sender,
-          recipient: recipient,
-          amount: amount,
-          broadcasted_to: broadcasted_to.concat(broadcasting_to) << @ip
-        }
-      )
+      broadcasting_to.each do |peer|
+        puts "Broadcasting transaction to peer at #{peer}"
+        message_peer(
+          peer,
+          "/transactions/new",
+          'POST',
+          {
+            id: transaction[:id],
+            sender: transaction[:sender],
+            recipient: transaction[:recipient],
+            amount: transaction[:amount],
+            signature: transaction[:signature],
+            timestamp: transaction[:timestamp],
+            broadcasted_to: broadcasted_to.concat(broadcasting_to) << @ip
+          }
+        )
+      end
     end
   end
 
@@ -102,7 +118,7 @@ class Odyn < Sinatra::Base
 
       # If we were unable to connect to any of the nodes, start anyway
       # (this should almost never happen, except for the first node that is ever set up)
-      peers.concat(response ? response['nodes'] : [])
+      peers.concat(response ? response['nodes'].uniq : [])
     end
   end
 

@@ -17,7 +17,7 @@ join the [Gitter Channel](https://gitter.im/odyn-crypto/Lobby) and ask!
 3. Run `bundle install`
 4. Update the nodes.txt file in the node/ folder to have the external ip of your router, along with the port that you plan on running the nodes on. It is a good idea to use one 2, with the same IP, but with 2 different ports (9999 and 9998)
 5. Forward ports 9999 and 9998 on your router (this allows you to connect to other nodes)
-6. The entry to the blockchain is node/node.rb, run `ruby node/node.rb` to start the node
+6. Run `thor node_launcher:port PORT_NUMBER` to start the node
 
 
 ## Release History
