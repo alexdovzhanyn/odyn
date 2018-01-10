@@ -1,10 +1,21 @@
-require_relative './listener.rb'
-require_relative '../lib/blockchain.rb'
-
-
+require_relative '../node/node.rb'
 
 blockchain = Blockchain.new
-listener = Thread.new { Listener.run! }
+listener = Thread.new do
+  class MinerNode < Odyn
+    class << self
+      attr_reader :listener
+    end
+
+    def initialize
+      Thread.current.thread_variable_set(:node, self)
+
+      super
+    end
+
+    run!
+  end
+end
 
 trap("INT") {
   listener.kill
@@ -12,8 +23,8 @@ trap("INT") {
 }
 
 loop do
-  if listener.thread_variable_get(:listener)
-    transactions = listener.thread_variable_get(:listener).transactions.shift(5)
+  if listener.thread_variable_get(:node)&.blockchain
+    transactions = listener.thread_variable_get(:node).blockchain.unprocessed_transactions.shift(5)
 
     if transactions.empty?
       sleep 2

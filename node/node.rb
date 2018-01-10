@@ -9,12 +9,12 @@ require_relative '../lib/blockchain.rb'
 require_relative '../wallet/wallet.rb'
 
 class Odyn < Sinatra::Base
-  attr_accessor :transactions
+  attr_accessor :blockchain
 
   DEFAULT_PORT = 9999
 
   configure do
-    set server: "thin"
+    set server: "webrick"
     set port: settings.port || DEFAULT_PORT
     set traps: false
     set logging: true # Should be set to nil for production
