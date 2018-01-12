@@ -16,20 +16,10 @@ class Transaction
     @signature = sign_transaction
   end
 
-  def to_json(options = nil)
-    {
-      id: id,
-      sender: sender,
-      recipient: recipient,
-      amount: amount.to_s,
-      timestamp: timestamp
-    }.to_json
-  end
-
   private #===============================================================
 
   def sign_transaction
     wallet = Wallet.new
-    wallet.authorize_transaction(self.to_json)
+    wallet.authorize_transaction(@id)
   end
 end

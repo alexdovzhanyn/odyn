@@ -11,8 +11,7 @@ class Wallet
   end
 
   def authorize_transaction(transaction)
-    signature = @keypair.dsa_sign_asn1(transaction)
-    base64sig = Base64.encode64(signature).gsub("\n", "")
+    Base64.encode64(@keypair.dsa_sign_asn1(transaction)).gsub("\n", "")
   end
 
   private #===============================================================
