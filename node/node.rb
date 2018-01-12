@@ -14,11 +14,11 @@ class Odyn < Sinatra::Base
   DEFAULT_PORT = 9999
 
   configure do
-    set server: "webrick"
+    set server: "thin"
     set port: settings.port || DEFAULT_PORT
     set traps: false
-    set logging: true # Should be set to nil for production
-    # set quiet: true # Should be set to true for production
+    set logging: nil # Should be set to nil for production
+    set quiet: true # Should be set to true for production
     set bind: '0.0.0.0'
   end
 
@@ -33,7 +33,7 @@ class Odyn < Sinatra::Base
 
   get '/transactions' do
     content_type :json
-    @blockchain.unprocessed_transactions.to_json
+    @blockchain.transaction_pool.to_json
   end
 
   get '/chain' do
@@ -51,15 +51,7 @@ class Odyn < Sinatra::Base
   post '/transactions/new' do
     content_type :json
     Thread.new do
-      transaction = {
-        id: params[:id],
-        sender: params[:sender],
-        recipient: params[:recipient],
-        amount: params[:amount],
-        timestamp: params[:timestamp],
-        signature: params[:signature]
-      }
-      broadcast_transaction(transaction, params[:broadcasted_to] || [])
+      broadcast_transaction(params[:transaction], params[:broadcasted_to] || [])
       Thread.current.kill
     end
 
@@ -67,7 +59,9 @@ class Odyn < Sinatra::Base
   end
 
   def broadcast_transaction(transaction, broadcasted_to)
-    if @blockchain.valid_transaction? transaction
+    transaction_object = Marshal.load(Base64.decode64(transaction))
+    if @blockchain.valid_transaction? transaction_object
+      @blockchain.transaction_pool << transaction_object
       puts "Transaction Valid"
       broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 
@@ -78,12 +72,7 @@ class Odyn < Sinatra::Base
           "/transactions/new",
           'POST',
           {
-            id: transaction[:id],
-            sender: transaction[:sender],
-            recipient: transaction[:recipient],
-            amount: transaction[:amount],
-            signature: transaction[:signature],
-            timestamp: transaction[:timestamp],
+            transaction: transaction,
             broadcasted_to: broadcasted_to.concat(broadcasting_to) << @ip
           }
         )

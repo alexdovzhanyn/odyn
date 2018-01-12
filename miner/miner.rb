@@ -1,36 +1,34 @@
 require_relative '../node/node.rb'
+require_relative '../lib/coinbase.rb'
 
-blockchain = Blockchain.new
-listener = Thread.new do
-  class MinerNode < Odyn
-    class << self
-      attr_reader :listener
+class MinerNode < Odyn
+  configure do
+    set server: "thin"
+    set port: 3333
+    set traps: false
+    set logging: nil # Should be set to nil for production
+    set quiet: true # Should be set to true for production
+    set bind: '0.0.0.0'
+  end
+
+  def initialize
+    super
+
+    miner = Thread.new do
+      loop do
+        if @blockchain
+          transactions = @blockchain.transaction_pool.shift(5)
+          if transactions.empty?
+            sleep 2
+          else
+            puts "#{transactions.length} transactions found"
+            transactions.unshift(Coinbase.new(Wallet.new.public_key_hex, 120))
+            @blockchain.add_block(transactions)
+          end
+        end
+      end
     end
-
-    def initialize
-      Thread.current.thread_variable_set(:node, self)
-
-      super
-    end
-
-    run!
   end
 end
 
-trap("INT") {
-  listener.kill
-  Thread.current.kill
-}
-
-loop do
-  if listener.thread_variable_get(:node)&.blockchain
-    transactions = listener.thread_variable_get(:node).blockchain.unprocessed_transactions.shift(5)
-
-    if transactions.empty?
-      sleep 2
-    else
-      puts "#{transactions.length} transactions found"
-      blockchain.add_block(transactions)
-    end
-  end
-end
+MinerNode.start!
