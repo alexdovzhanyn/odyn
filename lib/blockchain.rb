@@ -5,7 +5,7 @@ require_relative './ledger'
 require_relative './transaction'
 
 class Blockchain
-  attr_reader :chain, :difficulty, :ledger
+  attr_reader :chain, :difficulty, :ledger, :unprocessed_transactions
 
   def initialize
     genesis = generate_genesis_block
