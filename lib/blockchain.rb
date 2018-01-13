@@ -8,12 +8,12 @@ class Blockchain
   attr_reader :chain, :difficulty, :ledger, :transaction_pool
 
   def initialize
-    genesis = generate_genesis_block
-    @chain = [genesis]
-    @difficulty = 4
-
     @ledger = Ledger.new
-    @ledger.write(genesis)
+    @difficulty = 7
+
+    ledger.write(generate_genesis_block) unless ledger.find('GENESIS')
+
+    @chain = ledger.last_20_blocks
     @transaction_pool = []
   end
 
@@ -39,7 +39,10 @@ class Blockchain
   private #===============================================================
 
   def generate_genesis_block
-    Block.new(0, 'Genesis Block', 0, 0)
+    block = Block.new(0, 'Genesis Block', 0, 0)
+    block.hash = 'GENESIS'
+
+    block
   end
 
   def valid_block?(block)

@@ -17,7 +17,7 @@ class MinerNode < Odyn
     miner = Thread.new do
       loop do
         if @blockchain
-          transactions = @blockchain.transaction_pool.shift(5)
+          transactions = @blockchain.transaction_pool.shift(1000)
           if transactions.empty?
             sleep 2
           else
