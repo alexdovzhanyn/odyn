@@ -4,6 +4,7 @@ require 'thin'
 require 'json'
 require 'pry'
 require 'httparty'
+require 'yaml'
 
 require_relative '../lib/blockchain.rb'
 require_relative '../wallet/wallet.rb'
@@ -59,7 +60,7 @@ class Odyn < Sinatra::Base
   end
 
   def broadcast_transaction(transaction, broadcasted_to)
-    transaction_object = Marshal.load(Base64.decode64(transaction))
+    transaction_object = YAML::load(Base64.decode64(transaction))
     if @blockchain.valid_transaction? transaction_object
       @blockchain.transaction_pool << transaction_object
       puts "Transaction Valid"
