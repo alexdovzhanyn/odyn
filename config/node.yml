@@ -1,0 +1,13 @@
+# Node network types: normal/internal
+dev:
+    logging: true
+    quiet: false
+    deafult_port: 9999
+    ip: 0.0.0.0
+    notework_type: internal
+prod:
+    logging: nil
+    quiet: true
+    deafult_port: 9999
+    ip: 0.0.0.0
+    notework_type: normal

@@ -1,14 +1,17 @@
 require_relative '../node/node.rb'
 require_relative '../lib/coinbase.rb'
 
+require_relative '../config.rb'
+
 class MinerNode < Odyn
   configure do
+    config = Config.settings['miner'];
     set server: "thin"
-    set port: 3333
+    set port: config['port']
     set traps: false
-    set logging: nil # Should be set to nil for production
-    set quiet: true # Should be set to true for production
-    set bind: '0.0.0.0'
+    set logging: config['logging']
+    set quiet: config['quiet']
+    set bind: config['ip']
   end
 
   def initialize

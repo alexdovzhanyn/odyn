@@ -5,30 +5,31 @@ require 'json'
 require 'pry'
 require 'httparty'
 require 'yaml'
+require 'socket'
 
 require_relative '../lib/blockchain.rb'
 require_relative '../wallet/wallet.rb'
+require_relative '../config.rb'
 
 class Odyn < Sinatra::Base
   attr_accessor :blockchain
 
-  DEFAULT_PORT = 9999
+  CONFIG = Config.settings['node'];
 
   configure do
     set server: "thin"
-    set port: settings.port || DEFAULT_PORT
+    set port: settings.port || CONFIG['deafult_port']
     set traps: false
-    set logging: nil # Should be set to nil for production
-    set quiet: true # Should be set to true for production
-    set bind: '0.0.0.0'
+    set logging: CONFIG['logging']
+    set quiet: CONFIG['quiet']
+    set bind: CONFIG['ip']
   end
 
   def initialize
     @blockchain = Blockchain.new
-    @ip = "#{get_current_ip}:#{settings.port || DEFAULT_PORT}"
+    @ip = "#{get_current_ip}:#{settings.port || CONFIG['deafult_port']}"
     @peers = register_node
     @wallet = Wallet.new
-
     super
   end
 
@@ -113,7 +114,11 @@ class Odyn < Sinatra::Base
   end
 
   def get_current_ip
-    Net::HTTP.get(URI("http://api.ipify.org"))
+    if CONFIG['notework_type'] == 'internal'
+      CONFIG['ip']
+    else
+      Net::HTTP.get(URI("http://api.ipify.org"))
+    end
   end
 
   private #================================================================
