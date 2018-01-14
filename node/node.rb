@@ -5,7 +5,6 @@ require 'json'
 require 'pry'
 require 'httparty'
 require 'yaml'
-require 'socket'
 
 require_relative '../lib/blockchain.rb'
 require_relative '../wallet/wallet.rb'
