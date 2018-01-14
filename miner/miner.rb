@@ -14,8 +14,7 @@ class MinerNode < Odyn
   def initialize
     super
 
-    miner = Thread.new do
-      Thread.current.abort_on_exception = true
+    miner = async do
       loop do
         if @blockchain
           transactions = @blockchain.transaction_pool.shift(1000)
@@ -24,7 +23,7 @@ class MinerNode < Odyn
           else
             puts "#{transactions.length} transactions found"
             transactions.unshift(Coinbase.new(Wallet.new.public_key_hex, 120))
-            @blockchain.add_block(transactions)
+            @blockchain.mine_block(transactions)
           end
         end
       end
