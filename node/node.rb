@@ -24,7 +24,7 @@ class Odyn < Sinatra::Base
     set traps: false
     set logging: CONFIG['logging']
     set quiet: CONFIG['quiet']
-    set bind: CONFIG['ip']
+    set bind: CONFIG['internal_ip']
   end
 
   def initialize
@@ -150,7 +150,7 @@ class Odyn < Sinatra::Base
 
   def get_current_ip
     if CONFIG['notework_type'] == 'internal'
-      CONFIG['ip']
+      CONFIG['internal_ip']
     else
       Net::HTTP.get(URI("http://api.ipify.org"))
     end
