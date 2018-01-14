@@ -15,6 +15,7 @@ class MinerNode < Odyn
     super
 
     miner = Thread.new do
+      Thread.current.abort_on_exception = true
       loop do
         if @blockchain
           transactions = @blockchain.transaction_pool.shift(1000)
