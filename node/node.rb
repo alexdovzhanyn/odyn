@@ -6,8 +6,11 @@ require 'pry'
 require 'httparty'
 require 'yaml'
 
+require_relative '../lib/transaction.rb'
+require_relative '../lib/coinbase.rb'
 require_relative '../lib/blockchain.rb'
 require_relative '../wallet/wallet.rb'
+require_relative '../lib/helpers.rb'
 require_relative '../config.rb'
 
 class Odyn < Sinatra::Base
@@ -27,6 +30,7 @@ class Odyn < Sinatra::Base
   def initialize
     @blockchain = Blockchain.new
     @ip = "#{get_current_ip}:#{settings.port || CONFIG['deafult_port']}"
+    @blockchain.add_observer(self, :broadcast_block)
     @peers = register_node
     @wallet = Wallet.new
     super
@@ -51,9 +55,17 @@ class Odyn < Sinatra::Base
 
   post '/transactions/new' do
     content_type :json
-    Thread.new do
+    async do
       broadcast_transaction(params[:transaction], params[:broadcasted_to] || [])
-      Thread.current.kill
+    end
+
+    return {status: 200}.to_json
+  end
+
+  post '/block/new' do
+    content_type :json
+    async do
+      broadcast_block(params[:block], params[:broadcasted_to] || [])
     end
 
     return {status: 200}.to_json
@@ -74,6 +86,30 @@ class Odyn < Sinatra::Base
           'POST',
           {
             transaction: transaction,
+            broadcasted_to: broadcasted_to.concat(broadcasting_to) << @ip
+          }
+        )
+      end
+    end
+  end
+
+  def broadcast_block(block, broadcasted_to = [])
+    deserialized_block = YAML::load(Base64.decode64(block))
+
+    if @blockchain.valid_block? deserialized_block
+      @blockchain.append_verified_block(deserialized_block)
+      puts "Block Valid"
+
+      broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
+
+      broadcasting_to.each do |peer|
+        # puts "Broadcasting transaction to peer at #{peer}"
+        message_peer(
+          peer,
+          "/block/new",
+          'POST',
+          {
+            block: block,
             broadcasted_to: broadcasted_to.concat(broadcasting_to) << @ip
           }
         )

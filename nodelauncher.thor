@@ -9,8 +9,8 @@ class NodeLauncher < Thor
       begin
         Odyn.set :port, Integer(port_num)
         Odyn.start!
-      rescue Exception
-        puts "#{port_num} invalid port parameter"
+      rescue Exception => e
+        puts e
       end
     end
 end
