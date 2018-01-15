@@ -1,26 +1,21 @@
 require 'yaml'
 
 module Config
-    extend self
-  
+  attr_reader :settings
+  extend self
+
+  GLOBAL_CONFIG = './config/global.yml'
+  MINER_CONFIG = './config/miner.yml'
+  NODE_CONFIG = './config/node.yml'
+
+  def load!()
     @settings = {}
-    attr_reader :settings
+    env = YAML::load_file(GLOBAL_CONFIG)['env']
 
-    GLOBAL_CONFIG = './config/global.yml'   
-    MINER_CONFIG = './config/miner.yml'
-    NODE_CONFIG = './config/node.yml'
-
-    def load!()
-      global = YAML::load_file(GLOBAL_CONFIG)
-      miner = YAML::load_file(MINER_CONFIG)
-      node = YAML::load_file(NODE_CONFIG)
-      
-      env = global['env']
-      
-      @settings['env'] = env;
-      @settings['node'] = node[env];
-      @settings['miner'] = miner[env];
-    end
+    @settings[:env] = env
+    @settings[:node] = YAML::load_file(NODE_CONFIG)[env]
+    @settings[:miner] = YAML::load_file(MINER_CONFIG)[env]
+  end
 end
 
 Config.load!

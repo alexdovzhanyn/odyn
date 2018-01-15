@@ -2,12 +2,12 @@
 dev:
     logging: true
     quiet: false
-    deafult_port: 9999
+    default_port: 9999
     internal_ip: 0.0.0.0
-    notework_type: internal
+    network_type: internal
 prod:
     logging: nil
     quiet: true
-    deafult_port: 9999
+    default_port: 9999
     internal_ip: 0.0.0.0
-    notework_type: normal
+    network_type: normal
