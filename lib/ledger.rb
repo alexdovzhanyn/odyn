@@ -1,5 +1,3 @@
-require 'pstore'
-
 class Ledger
   attr_reader :ledger
   def initialize
@@ -20,9 +18,9 @@ class Ledger
     end
   end
 
-  def last_20_blocks
+  def latest_blocks(number_of_blocks = 20)
     ledger.transaction do
-      ledger.roots.last(20).map{|hash| ledger[hash] }
+      ledger.roots.last(number_of_blocks).map{|hash| ledger[hash] }
     end
   end
 end
