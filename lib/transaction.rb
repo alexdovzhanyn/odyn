@@ -1,9 +1,3 @@
-require 'digest'
-require 'pry'
-require 'json'
-
-require_relative '../wallet/wallet.rb'
-
 class Transaction
   attr_reader :recipient, :sender, :amount, :timestamp, :id, :signature
 

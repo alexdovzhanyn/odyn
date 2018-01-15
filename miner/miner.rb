@@ -23,7 +23,7 @@ class MinerNode < Odyn
             sleep 2
           else
             puts "#{transactions.length} transactions found"
-            transactions.unshift(Coinbase.new(Wallet.new.public_key_hex, 120))
+            transactions.unshift(Coinbase.new(Wallet.new.public_key_hex, Coinbase.appropriate_reward_for_block(@blockchain.chain.last.index + 1)))
             @blockchain.mine_block(transactions)
           end
         end

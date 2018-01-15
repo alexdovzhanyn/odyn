@@ -17,7 +17,7 @@ class Odyn < Sinatra::Base
   def initialize
     @blockchain = Blockchain.new
     @ip = "#{get_current_ip}:#{settings.port || CONFIG['default_port']}"
-    @blockchain.add_observer(self, :broadcast_block)
+    @blockchain.add_observer(self, :broadcast_block) # Using the observer pattern, subscribe to updates from the chain
     @peers = register_node
     @wallet = Wallet.new
     super
@@ -139,6 +139,8 @@ class Odyn < Sinatra::Base
   end
 
   def get_current_ip
+    # Internal is only used when developing/testing with multiple nodes on the same
+    # machine. This removes the need for port forwarding.
     if CONFIG['network_type'] == 'internal'
       CONFIG['internal_ip']
     else

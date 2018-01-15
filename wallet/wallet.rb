@@ -6,6 +6,7 @@ class Wallet
   attr_reader :keypair, :public_key_hex
 
   def initialize
+    # Load an existing keypair or create one if none exist
     @keypair = load_ecdsa_keypair || generate_ecdsa_keypair
     @public_key_hex = @keypair.public_key.to_bn.to_s(16).downcase
   end

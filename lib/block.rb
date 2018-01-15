@@ -1,5 +1,3 @@
-require 'digest'
-
 class Block
   attr_reader :index, :timestamp, :nonce, :transactions, :previous_hash, :difficulty, :merkle_root
   attr_accessor :hash
