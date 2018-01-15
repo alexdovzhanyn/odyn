@@ -35,7 +35,13 @@ class Blockchain
   end
 
   def valid_block?(block)
-    return true unless block.index != @chain.last.index + 1 || block.previous_hash != @chain.last.hash || block.hash != block.calculate_hash || !valid_coinbase?(block)
+    [
+      block.index == @chain.last.index + 1,
+      block.previous_hash == @chain.last.hash,
+      block.hash == block.calculate_hash,
+      valid_coinbase?(block),
+      block.transactions.length > 1
+    ].all?
   end
 
   private #===============================================================
