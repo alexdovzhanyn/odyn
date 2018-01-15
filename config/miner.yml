@@ -1,0 +1,10 @@
+dev:
+    logging: true
+    quiet: false
+    port: 3333
+    ip: 0.0.0.0
+prod:
+    logging: nil
+    quiet: true
+    port: 3333
+    ip: 0.0.0.0

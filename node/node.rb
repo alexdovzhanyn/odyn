@@ -1,38 +1,25 @@
-require 'sinatra/base'
-require 'sinatra/json'
-require 'thin'
-require 'json'
-require 'pry'
-require 'httparty'
-require 'yaml'
-
-require_relative '../lib/transaction.rb'
-require_relative '../lib/coinbase.rb'
-require_relative '../lib/blockchain.rb'
-require_relative '../wallet/wallet.rb'
-require_relative '../lib/helpers.rb'
+require_relative '../config/initializer.rb'
 
 class Odyn < Sinatra::Base
   attr_accessor :blockchain
 
-  DEFAULT_PORT = 9999
+  CONFIG = Config.settings[:node]
 
   configure do
     set server: "thin"
-    set port: settings.port || DEFAULT_PORT
+    set port: settings.port || CONFIG['default_port']
     set traps: false
-    set logging: nil # Should be set to nil for production
-    set quiet: true # Should be set to true for production
-    set bind: '0.0.0.0'
+    set logging: CONFIG['logging']
+    set quiet: CONFIG['quiet']
+    set bind: CONFIG['internal_ip']
   end
 
   def initialize
     @blockchain = Blockchain.new
-    @ip = "#{get_current_ip}:#{settings.port || DEFAULT_PORT}"
+    @ip = "#{get_current_ip}:#{settings.port || CONFIG['default_port']}"
     @blockchain.add_observer(self, :broadcast_block)
     @peers = register_node
     @wallet = Wallet.new
-
     super
   end
 
@@ -73,6 +60,8 @@ class Odyn < Sinatra::Base
 
   def broadcast_transaction(transaction, broadcasted_to)
     transaction_object = YAML::load(Base64.decode64(transaction))
+    broadcasted_to = JSON.parse(broadcasted_to) if broadcasted_to.instance_of? String
+
     if @blockchain.valid_transaction? transaction_object
       @blockchain.transaction_pool << transaction_object
       puts "Transaction Valid"
@@ -95,6 +84,7 @@ class Odyn < Sinatra::Base
 
   def broadcast_block(block, broadcasted_to = [])
     deserialized_block = YAML::load(Base64.decode64(block))
+    broadcasted_to = JSON.parse(broadcasted_to) if broadcasted_to.instance_of? String
 
     if @blockchain.valid_block? deserialized_block
       @blockchain.append_verified_block(deserialized_block)
@@ -149,7 +139,11 @@ class Odyn < Sinatra::Base
   end
 
   def get_current_ip
-    Net::HTTP.get(URI("http://api.ipify.org"))
+    if CONFIG['network_type'] == 'internal'
+      CONFIG['internal_ip']
+    else
+      Net::HTTP.get(URI("http://api.ipify.org"))
+    end
   end
 
   private #================================================================
