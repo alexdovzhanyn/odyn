@@ -4,27 +4,29 @@ class Block
 
   def initialize(index,  transactions, previous_hash, difficulty)
     @index = index
-    @timestamp = Time.now
+    @timestamp = nil
     @transactions = transactions
     @previous_hash = previous_hash
     @nonce = 0
-    @hash = ""
+    @hash = (2**256-1).to_s(16)
     @difficulty = difficulty
   end
 
   def calculate_hash
-    @hash = Digest::SHA256.hexdigest(@index.to_s + @timestamp.to_s + @previous_hash.to_s + @nonce.to_s + @merkle_root)
+    @hash = Digest::SHA256.hexdigest(@index.to_s + @previous_hash.to_s + @nonce.to_s + @merkle_root)
   end
 
   def mine
     puts "Calculating Merkle root...."
     @merkle_root = calculate_merkle_root(transactions.map{|transaction| transaction.id}).first
-    puts "Merkle root found: #{@merkle_root}\n"
+    puts "\e[34mMerkle root found:\e[0m #{@merkle_root}\n"
 
     puts "Mining Block: #{index}"
     time_started = Time.now
 
-    until @hash.start_with?("0" * difficulty)
+    target = (16**(64 - @difficulty) - 1).round(0)
+
+    until @hash.to_i(16) < target
       @nonce += 1
       @hash = calculate_hash
       speed = sprintf("%.2f KH/s", @nonce/Time.at(Time.now - time_started).to_f/1000)
@@ -33,6 +35,7 @@ class Block
       $stdout.flush
     end
 
+    @timestamp = Time.now
     puts "\nCalculated block hash: #{hash}, using nonce: #{nonce}"
   end
 
