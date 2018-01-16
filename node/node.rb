@@ -64,7 +64,7 @@ class Odyn < Sinatra::Base
 
     if @blockchain.valid_transaction? transaction_object
       @blockchain.transaction_pool << transaction_object
-      puts "Transaction Valid"
+      puts "\e[32mTransaction Valid\e[0m"
       broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 
       broadcasting_to.each do |peer|
@@ -88,12 +88,12 @@ class Odyn < Sinatra::Base
 
     if @blockchain.valid_block? deserialized_block
       @blockchain.append_verified_block(deserialized_block)
-      puts "Block Valid"
+      puts "\e[32mBlock Valid\e[0m"
 
       broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 
       broadcasting_to.each do |peer|
-        # puts "Broadcasting transaction to peer at #{peer}"
+        puts "\e[32mBroadcasting transaction to peer at #{peer}\e[0m"
         message_peer(
           peer,
           "/block/new",
