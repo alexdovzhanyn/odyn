@@ -11,8 +11,8 @@ class Wallet
     @public_key_hex = @keypair.public_key.to_bn.to_s(16).downcase
   end
 
-  def authorize_transaction(transaction)
-    Base64.encode64(@keypair.dsa_sign_asn1(transaction)).gsub("\n", "")
+  def authorize_utxo(txoid)
+    Base64.encode64(@keypair.dsa_sign_asn1(txoid)).gsub("\n", "")
   end
 
   private #===============================================================

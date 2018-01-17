@@ -3,7 +3,7 @@ class Blockchain
   attr_reader :chain, :difficulty, :ledger, :transaction_pool
 
   TARGET_BLOCKTIME = 120.0 # 2 minutes
-  BLOCK_REBALANCE_OFFSET = 10 # 10080 blocks at 2 minutes each should be every 2 weeks
+  BLOCK_REBALANCE_OFFSET = 10080 # 10080 blocks at 2 minutes each should be every 2 weeks
 
   def initialize
     @ledger = Ledger.new
@@ -35,10 +35,20 @@ class Blockchain
   end
 
   def valid_transaction?(transaction)
-    group = OpenSSL::PKey::EC::Group.new('secp256k1')
-    key = OpenSSL::PKey::EC.new(group)
-    key.public_key = OpenSSL::PKey::EC::Point.new(group, OpenSSL::BN.new(transaction.sender, 16))
-    key.dsa_verify_asn1(transaction.id, Base64.decode64(transaction.signature))
+    return false unless transaction.inputs.reduce(0) { |sum, input| sum + input[:amount] } >= transaction.designations.reduce(0) { |sum, designation| sum + designation[:amount] }
+    valid = true
+
+    transaction.inputs.each do |input|
+      group = OpenSSL::PKey::EC::Group.new('secp256k1')
+      key = OpenSSL::PKey::EC.new(group)
+      key.public_key = OpenSSL::PKey::EC::Point.new(group, OpenSSL::BN.new(input[:address], 16))
+
+      if !key.dsa_verify_asn1(input[:txoid], Base64.decode64(input[:signature]))
+        valid = false
+      end
+    end
+
+    return valid
   end
 
   def valid_block?(block)
@@ -47,7 +57,7 @@ class Blockchain
       block.previous_hash == @chain.last.hash,
       block.hash == block.calculate_hash,
       valid_coinbase?(block),
-      block.transactions.length > 1
+      all_transactions_valid?(block.transactions)
     ].all?
   end
 
@@ -72,10 +82,20 @@ class Blockchain
 
   def valid_coinbase?(block)
     # A block must include a coinbase in order to be valid.
-    coinbase = block.transactions.first
+    transactions = block.transactions.dup
+    coinbase = transactions.shift
     return false if !coinbase.instance_of? Coinbase
 
+    fees = transactions.reduce(0) {|sum,  tx| sum += tx.fee}
+
     # If the miner is trying to claim a reward too high (or too low), the block is invalid
-    coinbase.amount == Coinbase.appropriate_reward_for_block(block.index)
+    coinbase.amount <= Coinbase.appropriate_reward_for_block(block.index) + fees
+  end
+
+  def all_transactions_valid?(transactions)
+    transactions = transactions.dup
+    transactions.shift
+
+    transactions.all? {|transaction| valid_transaction? transaction }
   end
 end

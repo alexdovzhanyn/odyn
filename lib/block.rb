@@ -52,12 +52,4 @@ class Block
       transactions: transactions
     }.to_json
   end
-
-  def calculate_merkle_root(transactions)
-    unless transactions.length == 1
-      transactions = calculate_merkle_root(transactions.each_slice(2).map{|a, b| Digest::SHA256.hexdigest(a.to_s + b.to_s)})
-    end
-
-    transactions
-  end
 end

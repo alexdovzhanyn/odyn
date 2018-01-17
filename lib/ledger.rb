@@ -1,7 +1,9 @@
 class Ledger
   attr_reader :ledger
   def initialize
-    @ledger = PStore.new('ledger.pstore')
+    Dir.mkdir('data') unless Dir.exist?('data')
+    @ledger = PStore.new('data/ledger.pstore')
+    @utxos = PStore.new('data/utxo.pstore')
   end
 
   def write(block)
