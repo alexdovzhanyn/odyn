@@ -1,5 +1,5 @@
 class Coinbase < Transaction
-  attr_reader :recipient, :amount, :timestamp, :id
+  attr_reader :timestamp, :id
 
   def initialize(miner_address, amount)
     @timestamp = Time.now

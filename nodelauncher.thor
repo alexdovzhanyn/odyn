@@ -1,6 +1,4 @@
-
 require 'thor'
-
 require_relative './node/node.rb'
 
 class NodeLauncher < Thor

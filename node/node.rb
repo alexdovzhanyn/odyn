@@ -19,8 +19,11 @@ class Odyn < Sinatra::Base
     @ip = "#{get_current_ip}:#{settings.port || CONFIG['default_port']}"
     @blockchain.add_observer(self, :broadcast_block) # Using the observer pattern, subscribe to updates from the chain
     @peers = register_node
-    @wallet = Wallet.new
     super
+  end
+
+  get '/nodes' do
+    return {nodes: @peers.uniq!}.to_json
   end
 
   get '/transactions' do
@@ -145,13 +148,5 @@ class Odyn < Sinatra::Base
     else
       Net::HTTP.get(URI("http://api.ipify.org"))
     end
-  end
-
-  private #================================================================
-
-  def parameterize(params)
-    # Transforms a hash to a parameter string
-    # E.x. {a: 'something', b: 'otherthing'} => 'a=something&b=otherthing'
-    URI.escape(params.collect{|k,v| "#{k}=#{v}"}.join('&'))
   end
 end

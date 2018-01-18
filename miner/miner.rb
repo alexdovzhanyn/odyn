@@ -23,7 +23,7 @@ class MinerNode < Odyn
 
           fees = transactions.reduce(0) {|sum,  tx| sum += tx.fee}
 
-          transactions.unshift(Coinbase.new(Wallet.new.public_key_hex, Coinbase.appropriate_reward_for_block(@blockchain.chain.last.index + 1) + fees))
+          transactions.unshift(Coinbase.new(CONFIG['wallet_address'], Coinbase.appropriate_reward_for_block(@blockchain.chain.last.index + 1) + fees))
           @blockchain.mine_block(transactions)
         end
       end

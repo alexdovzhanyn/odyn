@@ -16,3 +16,9 @@ def calculate_merkle_root(array)
 
   array
 end
+
+def parameterize(params)
+  # Transforms a hash to a parameter string
+  # E.x. {a: 'something', b: 'otherthing'} => 'a=something&b=otherthing'
+  URI.escape(params.collect{|k,v| "#{k}=#{v}"}.join('&'))
+end
