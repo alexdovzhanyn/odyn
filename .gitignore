@@ -1,2 +1,3 @@
 data/*
+wallet/keys/*
 Gemfile.lock

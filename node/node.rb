@@ -62,9 +62,8 @@ class Odyn < Sinatra::Base
     transaction_object = YAML::load(Base64.decode64(transaction))
     broadcasted_to = JSON.parse(broadcasted_to) if broadcasted_to.instance_of? String
 
-    if @blockchain.valid_transaction? transaction_object
+    if Validator.valid_transaction?(transaction_object, @blockchain.ledger)
       @blockchain.transaction_pool << transaction_object
-      puts "\e[32mTransaction Valid\e[0m"
       broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 
       broadcasting_to.each do |peer|
@@ -86,9 +85,9 @@ class Odyn < Sinatra::Base
     deserialized_block = YAML::load(Base64.decode64(block))
     broadcasted_to = JSON.parse(broadcasted_to) if broadcasted_to.instance_of? String
 
-    if @blockchain.valid_block? deserialized_block
+    if Validator.valid_block?(deserialized_block, @blockchain.ledger)
       @blockchain.append_verified_block(deserialized_block)
-      puts "\e[32mBlock Valid\e[0m"
+      @blockchain.update_utxo_pool(deserialized_block)
 
       broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 

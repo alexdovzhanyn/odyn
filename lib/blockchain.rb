@@ -34,31 +34,9 @@ class Blockchain
     end
   end
 
-  def valid_transaction?(transaction)
-    return false unless transaction.inputs.reduce(0) { |sum, input| sum + input[:amount] } >= transaction.designations.reduce(0) { |sum, designation| sum + designation[:amount] }
-    valid = true
-
-    transaction.inputs.each do |input|
-      group = OpenSSL::PKey::EC::Group.new('secp256k1')
-      key = OpenSSL::PKey::EC.new(group)
-      key.public_key = OpenSSL::PKey::EC::Point.new(group, OpenSSL::BN.new(input[:address], 16))
-
-      if !key.dsa_verify_asn1(input[:txoid], Base64.decode64(input[:signature]))
-        valid = false
-      end
-    end
-
-    return valid
-  end
-
-  def valid_block?(block)
-    [
-      block.index == @chain.last.index + 1,
-      block.previous_hash == @chain.last.hash,
-      block.hash == block.calculate_hash,
-      valid_coinbase?(block),
-      all_transactions_valid?(block.transactions)
-    ].all?
+  def update_utxo_pool(block)
+    parse_block_utxos(block)
+    discard_used_utxos_from_pool(block)
   end
 
   def rebalance_difficulty
@@ -80,22 +58,15 @@ class Blockchain
     block
   end
 
-  def valid_coinbase?(block)
-    # A block must include a coinbase in order to be valid.
-    transactions = block.transactions.dup
-    coinbase = transactions.shift
-    return false if !coinbase.instance_of? Coinbase
-
-    fees = transactions.reduce(0) {|sum,  tx| sum += tx.fee}
-
-    # If the miner is trying to claim a reward too high (or too low), the block is invalid
-    coinbase.amount <= Coinbase.appropriate_reward_for_block(block.index) + fees
+  def parse_block_utxos(block)
+    block.transactions.map{|tx| tx.outputs}.flatten.each do |utxo|
+      ledger.add_utxo_to_pool(utxo)
+    end
   end
 
-  def all_transactions_valid?(transactions)
-    transactions = transactions.dup
-    transactions.shift
-
-    transactions.all? {|transaction| valid_transaction? transaction }
+  def discard_used_utxos_from_pool(block)
+    block.transactions.map{|tx| tx.inputs}.flatten.compact.each do |used_txo|
+      ledger.remove_utxo_from_pool(used_txo)
+    end
   end
 end

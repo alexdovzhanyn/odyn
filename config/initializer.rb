@@ -11,6 +11,7 @@ require 'observer'
 require 'pstore'
 
 require_relative '../lib/helpers.rb'
+require_relative '../lib/validator.rb'
 require_relative '../lib/ledger.rb'
 require_relative '../wallet/wallet.rb'
 require_relative '../lib/transaction.rb'
