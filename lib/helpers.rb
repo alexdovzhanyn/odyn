@@ -8,3 +8,17 @@ def async
     Thread.current.kill
   end
 end
+
+def calculate_merkle_root(array)
+  unless array.length == 1
+    array = calculate_merkle_root(array.each_slice(2).map{|a, b| Digest::SHA256.hexdigest(a.to_s + b.to_s)})
+  end
+
+  array
+end
+
+def parameterize(params)
+  # Transforms a hash to a parameter string
+  # E.x. {a: 'something', b: 'otherthing'} => 'a=something&b=otherthing'
+  URI.escape(params.collect{|k,v| "#{k}=#{v}"}.join('&'))
+end

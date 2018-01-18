@@ -19,13 +19,12 @@ class MinerNode < Odyn
       loop do
         if @blockchain
           transactions = @blockchain.transaction_pool.shift(1000)
-          if transactions.empty?
-            sleep 2
-          else
-            puts "#{transactions.length} transactions found"
-            transactions.unshift(Coinbase.new(Wallet.new.public_key_hex, Coinbase.appropriate_reward_for_block(@blockchain.chain.last.index + 1)))
-            @blockchain.mine_block(transactions)
-          end
+          puts "#{transactions.length} transactions found"
+
+          fees = transactions.reduce(0) {|sum,  tx| sum += tx.fee}
+
+          transactions.unshift(Coinbase.new(CONFIG['wallet_address'], Coinbase.appropriate_reward_for_block(@blockchain.chain.last.index + 1) + fees))
+          @blockchain.mine_block(transactions)
         end
       end
     end

@@ -19,8 +19,11 @@ class Odyn < Sinatra::Base
     @ip = "#{get_current_ip}:#{settings.port || CONFIG['default_port']}"
     @blockchain.add_observer(self, :broadcast_block) # Using the observer pattern, subscribe to updates from the chain
     @peers = register_node
-    @wallet = Wallet.new
     super
+  end
+
+  get '/nodes' do
+    return {nodes: @peers.uniq!}.to_json
   end
 
   get '/transactions' do
@@ -62,13 +65,12 @@ class Odyn < Sinatra::Base
     transaction_object = YAML::load(Base64.decode64(transaction))
     broadcasted_to = JSON.parse(broadcasted_to) if broadcasted_to.instance_of? String
 
-    if @blockchain.valid_transaction? transaction_object
+    if Validator.valid_transaction?(transaction_object, @blockchain.ledger)
       @blockchain.transaction_pool << transaction_object
-      puts "\e[32mTransaction Valid\e[0m"
       broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 
       broadcasting_to.each do |peer|
-        puts "Broadcasting transaction to peer at #{peer}"
+        puts "\e[32mBroadcasting transaction to peer at #{peer}\e[0m"
         message_peer(
           peer,
           "/transactions/new",
@@ -86,14 +88,14 @@ class Odyn < Sinatra::Base
     deserialized_block = YAML::load(Base64.decode64(block))
     broadcasted_to = JSON.parse(broadcasted_to) if broadcasted_to.instance_of? String
 
-    if @blockchain.valid_block? deserialized_block
+    if Validator.valid_block?(deserialized_block, @blockchain.ledger)
       @blockchain.append_verified_block(deserialized_block)
-      puts "\e[32mBlock Valid\e[0m"
+      @blockchain.update_utxo_pool(deserialized_block)
 
       broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 
       broadcasting_to.each do |peer|
-        puts "\e[32mBroadcasting transaction to peer at #{peer}\e[0m"
+        puts "\e[32mBroadcasting block to peer at #{peer}\e[0m"
         message_peer(
           peer,
           "/block/new",
@@ -146,13 +148,5 @@ class Odyn < Sinatra::Base
     else
       Net::HTTP.get(URI("http://api.ipify.org"))
     end
-  end
-
-  private #================================================================
-
-  def parameterize(params)
-    # Transforms a hash to a parameter string
-    # E.x. {a: 'something', b: 'otherthing'} => 'a=something&b=otherthing'
-    URI.escape(params.collect{|k,v| "#{k}=#{v}"}.join('&'))
   end
 end

@@ -3,7 +3,7 @@ class Blockchain
   attr_reader :chain, :difficulty, :ledger, :transaction_pool
 
   TARGET_BLOCKTIME = 120.0 # 2 minutes
-  BLOCK_REBALANCE_OFFSET = 10 # 10080 blocks at 2 minutes each should be every 2 weeks
+  BLOCK_REBALANCE_OFFSET = 10080 # 10080 blocks at 2 minutes each should be every 2 weeks
 
   def initialize
     @ledger = Ledger.new
@@ -34,21 +34,9 @@ class Blockchain
     end
   end
 
-  def valid_transaction?(transaction)
-    group = OpenSSL::PKey::EC::Group.new('secp256k1')
-    key = OpenSSL::PKey::EC.new(group)
-    key.public_key = OpenSSL::PKey::EC::Point.new(group, OpenSSL::BN.new(transaction.sender, 16))
-    key.dsa_verify_asn1(transaction.id, Base64.decode64(transaction.signature))
-  end
-
-  def valid_block?(block)
-    [
-      block.index == @chain.last.index + 1,
-      block.previous_hash == @chain.last.hash,
-      block.hash == block.calculate_hash,
-      valid_coinbase?(block),
-      block.transactions.length > 1
-    ].all?
+  def update_utxo_pool(block)
+    parse_block_utxos(block)
+    discard_used_utxos_from_pool(block)
   end
 
   def rebalance_difficulty
@@ -70,12 +58,15 @@ class Blockchain
     block
   end
 
-  def valid_coinbase?(block)
-    # A block must include a coinbase in order to be valid.
-    coinbase = block.transactions.first
-    return false if !coinbase.instance_of? Coinbase
+  def parse_block_utxos(block)
+    block.transactions.map{|tx| tx.outputs}.flatten.each do |utxo|
+      ledger.add_utxo_to_pool(utxo)
+    end
+  end
 
-    # If the miner is trying to claim a reward too high (or too low), the block is invalid
-    coinbase.amount == Coinbase.appropriate_reward_for_block(block.index)
+  def discard_used_utxos_from_pool(block)
+    block.transactions.map{|tx| tx.inputs}.flatten.compact.each do |used_txo|
+      ledger.remove_utxo_from_pool(used_txo)
+    end
   end
 end
