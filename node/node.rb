@@ -70,7 +70,7 @@ class Odyn < Sinatra::Base
       broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 
       broadcasting_to.each do |peer|
-        puts "Broadcasting transaction to peer at #{peer}"
+        puts "\e[32mBroadcasting transaction to peer at #{peer}\e[0m"
         message_peer(
           peer,
           "/transactions/new",
@@ -95,7 +95,7 @@ class Odyn < Sinatra::Base
       broadcasting_to = @peers.reject{ |node| broadcasted_to.include? node }
 
       broadcasting_to.each do |peer|
-        puts "\e[32mBroadcasting transaction to peer at #{peer}\e[0m"
+        puts "\e[32mBroadcasting block to peer at #{peer}\e[0m"
         message_peer(
           peer,
           "/block/new",
