@@ -17,12 +17,14 @@ module Validator
     return false unless transaction.inputs.reduce(0) { |sum, input| sum + input[:amount] } >= transaction.designations.reduce(0) { |sum, designation| sum + designation[:amount] }
 
     transaction.inputs.each do |input|
+      utxo = ledger.find_utxo(input[:txoid])
+      return false if !utxo || input[:amount] != utxo[:amount] || input[:address] != utxo[:address]
+
       group = OpenSSL::PKey::EC::Group.new('secp256k1')
       key = OpenSSL::PKey::EC.new(group)
       key.public_key = OpenSSL::PKey::EC::Point.new(group, OpenSSL::BN.new(input[:address], 16))
 
       return false if !key.dsa_verify_asn1(input[:txoid], Base64.decode64(input[:signature]))
-      return false if !ledger.find_utxo(input[:txoid])
     end
 
     puts "\e[32mTransaction Valid\e[0m"
