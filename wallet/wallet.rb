@@ -33,10 +33,9 @@ class Wallet
 
     change = inputs.reduce(0) { |sum, input| sum + input[:amount] } - amount - mining_fee
 
-    designations = [
-      {address: address, amount: amount},
-      {address: primary_key_hex, amount: change}
-    ]
+    designations = [{address: address, amount: amount}]
+
+    designations << {address: primary_key_hex, amount: change} if change > 0
 
     tx = Base64.encode64(YAML::dump(Transaction.new(designations, inputs)))
 

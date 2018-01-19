@@ -14,7 +14,7 @@ module Validator
   end
 
   def self.valid_transaction?(transaction, ledger)
-    return false unless transaction.inputs.reduce(0) { |sum, input| sum + input[:amount] } >= transaction.designations.reduce(0) { |sum, designation| sum + designation[:amount] }
+    return false unless transaction.inputs.reduce(0) { |sum, input| sum + input[:amount] } >= transaction.outputs.reduce(0) { |sum, output| sum + output[:amount] }
 
     transaction.inputs.each do |input|
       utxo = ledger.find_utxo(input[:txoid])
