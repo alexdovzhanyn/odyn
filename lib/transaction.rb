@@ -5,8 +5,8 @@ class Transaction
     @inputs = inputs
     @designations = designations
     @timestamp = Time.now
-    @outputs, @fee = calculate_outputs
     @id = Digest::SHA256.hexdigest(calculate_merkle_root(inputs).first.to_s + timestamp.to_s)
+    @outputs, @fee = calculate_outputs
   end
 
   def to_json(options = nil)

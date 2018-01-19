@@ -7,6 +7,7 @@ module Config
   GLOBAL_CONFIG = './config/global.yml'
   MINER_CONFIG = './config/miner.yml'
   NODE_CONFIG = './config/node.yml'
+  WALLET_CONFIG = './config/wallet.yml'
 
   def load!()
     @settings = {}
@@ -15,6 +16,7 @@ module Config
     @settings[:env] = env
     @settings[:node] = YAML::load_file(NODE_CONFIG)[env]
     @settings[:miner] = YAML::load_file(MINER_CONFIG)[env]
+    @settings[:wallet] = YAML::load_file(WALLET_CONFIG)[env]
   end
 end
 
