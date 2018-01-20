@@ -3,7 +3,7 @@
 # Odyn Blockchain
 > A proof-of-work, anonymous blockchain written in ruby
 
-![Mining in action](https://gfycat.com/BoldAntiqueAbyssiniangroundhornbill)
+![Mining in action](https://thumbs.gfycat.com/BoldAntiqueAbyssiniangroundhornbill-size_restricted.gif)
 
 This project aims to be a reference & full-fledged cryptocurrency/blockchain written in ruby. Eventually it would also serve as a building block for applications aiming to build their
 platform on a blockchain/distributed ledger technology.
