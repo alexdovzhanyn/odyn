@@ -1,7 +1,9 @@
-[![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()
+[![Packagist](https://img.shields.io/badge/license-MIT-blue.svg)]()
 
 # Odyn Blockchain
-> A ruby implementation of proof-of-work blockchain technology
+> A proof-of-work, anonymous blockchain written in ruby
+
+[Mining in action](https://gfycat.com/BoldAntiqueAbyssiniangroundhornbill)
 
 This project aims to be a reference & full-fledged cryptocurrency/blockchain written in ruby. Eventually it would also serve as a building block for applications aiming to build their
 platform on a blockchain/distributed ledger technology.
@@ -22,8 +24,16 @@ join the [Gitter Channel](https://gitter.im/odyn-crypto/Lobby) and ask!
 
 ## Release History
 
-* 0.0.1
-    * Begin setting up basic structure of
+* 0.0.1 Alpha
+    * Blockchain operational
+    * Peer-to-peer communication implemented
+    * Mining to a wallet is possible
+    * Wallets created
+    * Transactions can be created and stored within the Blockchain
+    * Nodes verify blocks and transactions as they come in
+    * Implemented wallet key rotation algorithm v1 (ensures anonymity and non-trackability within the blockchain)
+    * Nodes can catch up with blocks they've missed while offline
+    * TODO: Handle forking. Forks will cause permanently different chains in the current release
 
 ## Meta
 
