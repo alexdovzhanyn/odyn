@@ -13,7 +13,7 @@ join the [Gitter Channel](https://gitter.im/odyn-crypto/Lobby) and ask!
 ### OS X & Linux:
 
 1. Download this repository
-2. Make sure you have ruby installed on your system
+2. Make sure you have ruby 2.4.2 or higher installed on your system
 3. Run `bundle install`
 4. Update the nodes.txt file in the node/ folder to have the external ip of your router, along with the port that you plan on running the nodes on. It is a good idea to use one 2, with the same IP, but with 2 different ports (9999 and 9998)
 5. Forward ports 9999 and 9998 on your router (this allows you to connect to other nodes)
