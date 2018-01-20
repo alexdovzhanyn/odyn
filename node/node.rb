@@ -19,6 +19,8 @@ class Odyn < Sinatra::Base
     @ip = "#{get_current_ip}:#{settings.port || CONFIG['default_port']}"
     @blockchain.add_observer(self, :broadcast_block) # Using the observer pattern, subscribe to updates from the chain
     @peers = register_node
+
+    update_local_chain
     super
   end
 
@@ -26,9 +28,25 @@ class Odyn < Sinatra::Base
     return {nodes: @peers.uniq!}.to_json
   end
 
-  get '/transactions' do
+  get '/latest-block' do
     content_type :json
-    @blockchain.transaction_pool.to_json
+    {block: Base64.encode64(YAML::dump(@blockchain.chain.last))}.to_json
+  end
+
+  get '/block-index/:index' do
+    content_type :json
+    index = params[:index].to_i
+    index_within_chain = (@blockchain.chain.length - 1) - (@blockchain.chain.last.index - index)
+    res = nil
+    if @blockchain.chain.last.index == index
+      res = Base64.encode64(YAML::dump(@blockchain.chain.last))
+    elsif index_within_chain > -1
+      res = Base64.encode64(YAML::dump(@blockchain.chain[index_within_chain]))
+    else
+      res = Base64.encode64(YAML::dump(@blockchain.ledger.block_by_index(index)))
+    end
+
+    {block: res}.to_json
   end
 
   get '/chain' do
@@ -138,6 +156,47 @@ class Odyn < Sinatra::Base
       # (this should almost never happen, except for the first node that is ever set up)
       peers.concat(response ? response['nodes'].uniq : [])
     end
+  end
+
+  def update_local_chain
+    serialized_block = nil
+    @peers.each do |peer|
+      serialized_block = message_peer(peer, '/latest-block', 'GET')
+      break if serialized_block
+    end
+
+    return if !serialized_block
+
+    block = YAML::load(Base64.decode64(serialized_block['block']))
+
+    current_index = @blockchain.chain.last.index
+    if block.index > current_index
+      block_height_difference = block.index - current_index
+      puts "\e[31mBehind by #{block_height_difference} blocks!\e[0m"
+
+      block_height_difference.times do |i|
+        puts i
+        puts "Attempting to fetch block #{current_index + i + 1}..."
+
+        block = nil
+        @peers.each do |peer|
+          res = message_peer(peer, "/block-index/#{current_index + i + 1}", 'GET')
+
+          if res
+            block = YAML::load(Base64.decode64(res['block']))
+            valid = Validator.valid_block?(block, @blockchain.ledger)
+
+            if valid
+              @blockchain.append_verified_block(block)
+              @blockchain.update_utxo_pool(block)
+              break
+            end
+          end
+        end
+      end
+    end
+
+    puts "\e[32mCaught up to latest block.\e[0m"
   end
 
   def get_current_ip

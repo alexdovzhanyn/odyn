@@ -1,5 +1,6 @@
 require_relative '../node/node.rb'
 require_relative './wallet.rb'
+require_relative './gui/linux.rb'
 
 class WalletNode < Odyn
   CONFIG = Config.settings[:wallet]
@@ -26,6 +27,10 @@ class WalletNode < Odyn
           wallet.rotate_keys
         end
       end
+    end
+
+    async do
+      LinuxGUI.new
     end
   end
 end

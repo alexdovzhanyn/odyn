@@ -27,6 +27,10 @@ class Ledger
     end
   end
 
+  def block_by_index(index)
+    ledger.instance_variable_get('@table').find{|k,v| v.index == index }.last # Is this hacky?
+  end
+
   def add_utxo_to_pool(utxo)
     utxo_pool.transaction do
       utxo_pool[utxo[:txoid]] = utxo
