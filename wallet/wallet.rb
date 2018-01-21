@@ -62,7 +62,7 @@ class Wallet
 
   def discard_at_which_block?(pubkey)
     @keydata.transaction do
-      @keydata[pubkey][:block_created] + 2
+      @keydata[pubkey][:block_created] + 720
     end
   end
 
