@@ -40,7 +40,7 @@ module Validator
     fees = transactions.reduce(0) {|sum,  tx| sum += tx.fee}
 
     # If the miner is trying to claim a reward too high (or too low), the block is invalid
-    coinbase.total<= Coinbase.appropriate_reward_for_block(block.index) + fees
+    coinbase.total == Coinbase.appropriate_reward_for_block(block.index) + fees
   end
 
   def self.all_transactions_valid?(transactions, ledger)
