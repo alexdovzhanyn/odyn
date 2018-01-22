@@ -1,6 +1,6 @@
 dev:
-    logging: true
-    quiet: false
+    logging: nil
+    quiet: true
     port: 8998
     ip: 0.0.0.0
 prod:

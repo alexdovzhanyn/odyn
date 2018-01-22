@@ -92,7 +92,7 @@ class Wallet
   end
 
   def generate_ecdsa_keypair
-    key= OpenSSL::PKey::EC.new("secp256k1").generate_key
+    key = OpenSSL::PKey::EC.new("secp256k1").generate_key
 
     open("wallet/keys/#{hex_public_key(key)}.pem", 'w') do |private_key_file|
       private_key_file.write key.to_pem

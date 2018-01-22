@@ -10,6 +10,7 @@ require 'base64'
 require 'observer'
 require 'openssl'
 require 'pstore'
+require 'logger'
 
 require_relative '../lib/helpers.rb'
 require_relative '../lib/validator.rb'
@@ -19,3 +20,10 @@ require_relative '../lib/coinbase.rb'
 require_relative '../lib/block.rb'
 require_relative '../lib/blockchain.rb'
 require_relative '../config.rb'
+
+# Turn off shitty logging
+module Thin
+  module Logging
+    def log_info(msg); return; end
+  end
+end
