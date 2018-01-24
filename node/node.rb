@@ -9,7 +9,7 @@ class Odyn < Sinatra::Base
     set server: "thin"
     set port: settings.port || CONFIG['default_port']
     set traps: false
-    set logging: CONFIG['logging']
+    set logging: Logger::ERROR
     set quiet: CONFIG['quiet']
     set bind: CONFIG['internal_ip']
   end

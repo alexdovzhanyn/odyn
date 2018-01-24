@@ -42,6 +42,9 @@ class Wallet
     if @broadcaster_node
       broadcast_ip, broadcast_port = @broadcaster_node.split(':')
       JSON.parse(Net::HTTP.new(broadcast_ip, broadcast_port).post("/transactions/new", parameterize({transaction: tx})).body)
+      puts "\e[32mTransaction sent to #{@broadcaster_node}\e[0m"
+    else
+      puts "\e[31mCould not find node to broadcast to!\e[0m"
     end
   end
 

@@ -27,3 +27,9 @@ module Thin
     def log_info(msg); return; end
   end
 end
+
+class Rack::CommonLogger
+  def call(env)
+    @app.call(env)
+  end
+end
