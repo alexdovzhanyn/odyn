@@ -24,6 +24,9 @@ class Block
     puts "Mining Block: #{index}"
     time_started = Time.now
 
+    # We want to find a number that is lower than the difficulty target
+    # 16 to the power of 64 lets us capture all numbers in the 64 hex space number scheme
+    # The difficulty determines the scale at which we set the threshold for the difficulty
     target = (16**(64 - @difficulty) - 1).round(0)
 
     until @hash.to_i(16) < target

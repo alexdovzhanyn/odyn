@@ -9,6 +9,9 @@ def async
   end
 end
 
+# Merkle root lets us represet a large dataset using a SHA256 hash. We can be confident
+# that if any of the pieces within the dataset change, the hash will change, and we can
+# deem the dataset invalid
 def calculate_merkle_root(array)
   unless array.length == 1
     array = calculate_merkle_root(array.each_slice(2).map{|a, b| Digest::SHA256.hexdigest(a.to_s + b.to_s)})

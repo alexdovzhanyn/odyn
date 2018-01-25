@@ -20,6 +20,7 @@ module Validator
       utxo = ledger.find_utxo(input[:txoid])
       return false if !utxo || input[:amount] != utxo[:amount] || input[:address] != utxo[:address]
 
+      # Verify the transaction signature
       group = OpenSSL::PKey::EC::Group.new('secp256k1')
       key = OpenSSL::PKey::EC.new(group)
       key.public_key = OpenSSL::PKey::EC::Point.new(group, OpenSSL::BN.new(input[:address], 16))

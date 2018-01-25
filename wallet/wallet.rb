@@ -20,10 +20,15 @@ class Wallet
       return
     end
 
+    # Take all the UTXOs that we own, and sort them based on the amount.
+    # We want to spend the smallest ones first so we have mostly large UTXOs
     usable_utxos = find_owned_utxos.sort{|a, z| a[:amount] <=> z[:amount]}
 
     inputs = []
     index = 0
+
+    # Until the sum of our inputs is greater than the amount we want to send, plus the mining fee,
+    # we continue to accumulate an array of UTXOs and sign each of them, preparing to send them off
     until inputs.reduce(0) { |sum, input| sum + input[:amount] } >= amount + mining_fee
       utxo = usable_utxos[index]
       utxo[:signature] = authorize_utxo(utxo)
@@ -31,10 +36,12 @@ class Wallet
       index += 1
     end
 
+    # Specify the change we get back from this transaction
     change = inputs.reduce(0) { |sum, input| sum + input[:amount] } - amount - mining_fee
 
     designations = [{address: address, amount: amount}]
 
+    # Send the change back to our primary key
     designations << {address: primary_key_hex, amount: change} if change > 0
 
     tx = Base64.encode64(YAML::dump(Transaction.new(designations, inputs)))
@@ -49,10 +56,13 @@ class Wallet
   end
 
   def usable_balance
+    # We can use any UTXO that is addressed to any of our existing keys
     find_owned_utxos.reduce(0) { |sum, input| sum + input[:amount] }
   end
 
   def rotate_keys
+    # Delete any keys that don't have a UTXO assigned to them. These are useless without
+    # a balance, and we want to maximize our privacy
     keyring.keys.each do |key|
       if !find_utxos_for_pubkey(key).any?
         discard_ecdsa_keypair(key)
@@ -64,6 +74,7 @@ class Wallet
   end
 
   def discard_at_which_block?(pubkey)
+    # A new key should be created every 720 blocks (about 24 hours, assuming a 2 minute block time)
     @keydata.transaction do
       @keydata[pubkey][:block_created] + 720
     end
@@ -80,12 +91,16 @@ class Wallet
   end
 
   def authorize_utxo(utxo)
+    # Sign the UTXO with the key that it is assigned to
     Base64.encode64(@keyring[utxo[:address]].dsa_sign_asn1(utxo[:txoid])).gsub("\n", "")
   end
 
   def load_ecdsa_keypair
+    # This is part of the reason we need ruby 2.4.2, the Dir.empty? function was introduced
+    # in 2.4.0
     return false if Dir.empty?('wallet/keys')
 
+    # Load all the keys we have in the wallet into memory
     key_arr = Dir['wallet/keys/*.pem'].map do |key|
       key_from_file = OpenSSL::PKey::EC.new(File.read(key))
       { key_from_file.public_key.to_bn.to_s(16).downcase =>  key_from_file }
@@ -97,6 +112,7 @@ class Wallet
   def generate_ecdsa_keypair
     key = OpenSSL::PKey::EC.new("secp256k1").generate_key
 
+    # Name the keyfile with its own public key, so we can easily tell the keys apart
     open("wallet/keys/#{hex_public_key(key)}.pem", 'w') do |private_key_file|
       private_key_file.write key.to_pem
     end
@@ -116,6 +132,7 @@ class Wallet
   end
 
   def generate_key_data(key)
+    # Key data exists solely to track when a key was created, so we know when to delete it
     @keydata.transaction do
       @keydata[hex_public_key(key)] = {block_created: @ledger.latest_blocks(1).last.index}
       @keydata.commit

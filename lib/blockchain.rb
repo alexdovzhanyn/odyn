@@ -25,6 +25,7 @@ class Blockchain
     notify_observers(Base64.encode64(YAML::dump(block)))
   end
 
+  # This should only get called after we've verified that a block is valid
   def append_verified_block(block)
     @chain << block
     @ledger.write(block)
@@ -34,6 +35,8 @@ class Blockchain
     end
   end
 
+  # Any UTXOs used in a block must be discarded from our UTXO pool, otherwise
+  # there will be a possibility of double spending funds
   def update_utxo_pool(block)
     parse_block_utxos(block)
     discard_used_utxos_from_pool(block)
@@ -51,6 +54,7 @@ class Blockchain
 
   private #===============================================================
 
+  # We need a block to start with, as a basis for everyone to base their chain 
   def generate_genesis_block
     block = Block.new(0, 'Genesis Block', 0, 5.0)
     block.hash = 'GENESIS'

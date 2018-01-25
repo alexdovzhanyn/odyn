@@ -169,6 +169,8 @@ class Odyn < Sinatra::Base
 
     block = YAML::load(Base64.decode64(serialized_block['block']))
 
+    # See if we've already got the latest block. Otherwise we need to fetch whatever blocks
+    # we're missing
     current_index = @blockchain.chain.last.index
     if block.index > current_index
       block_height_difference = block.index - current_index
@@ -183,6 +185,7 @@ class Odyn < Sinatra::Base
           res = message_peer(peer, "/block-index/#{current_index + i + 1}", 'GET')
 
           if res
+            # We only trust blocks we validate ourselves
             block = YAML::load(Base64.decode64(res['block']))
             valid = Validator.valid_block?(block, @blockchain.ledger)
 

@@ -3,7 +3,7 @@ dev:
     quiet: false
     port: 3333
     ip: 0.0.0.0
-    wallet_address: 043a333b09829cb3674304847420f323129b41ceb1a602dd32a2e767bdd020d57785f8b90f7c2f012df517961cb5a37240f81bb5f5b1dfb885c63755a96d1cb2dd
+    wallet_address: 04aa9ff299e5e955a25a4e0c2f5517275e3b0e1e6ac50946bfd9f2ba80bc4a4d74491245c99ab2892ccb51e97297c8e12ba0b2b9efc2c51c44b54d6904f31db23c
 prod:
     logging: nil
     quiet: true

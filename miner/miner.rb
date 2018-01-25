@@ -23,6 +23,8 @@ class MinerNode < Odyn
 
           fees = transactions.reduce(0) {|sum,  tx| sum += tx.fee}
 
+          # Add a coinbase to the beginning of the block in order to credit the miner
+          # and make the block valid (the first transaction in a block must be a coinbase)
           transactions.unshift(Coinbase.new(CONFIG['wallet_address'], Coinbase.appropriate_reward_for_block(@blockchain.chain.last.index + 1) + fees))
           @blockchain.mine_block(transactions)
         end
