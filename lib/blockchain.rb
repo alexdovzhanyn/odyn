@@ -47,7 +47,7 @@ class Blockchain
     average_seconds_per_block = (chain.last.timestamp.to_f - chain[beginning_of_block_chunk].timestamp.to_f) / BLOCK_REBALANCE_OFFSET
     network_speed_ratio = TARGET_BLOCKTIME / average_seconds_per_block
 
-    prev_difficulty, @difficulty = @difficulty, Math.log(network_speed_ratio, 16)
+    prev_difficulty, @difficulty = @difficulty, @difficulty + Math.log(network_speed_ratio, 16)
 
     puts "Block difficulty set to #{@difficulty}, changed from #{prev_difficulty}.\n Average block time for past #{BLOCK_REBALANCE_OFFSET} blocks was #{average_seconds_per_block} seconds."
   end
